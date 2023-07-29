@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像生成</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        /* 样式 */
+    </style>
+
+</head>
+
+<body>
+    <div id="app">
+
+        <h1>AI图像生成</h1>
+
+        <div>
+            <label>提示词:</label>
+            <input v-model="dataBody.prompt">
+        </div>
+        <div>
+            <label>宽度(仅支持512):</label>
+            <select v-model="dataBody.width">
+                <option value="512">512</option>
+                <option value="768">768</option>
+            </select>
+            <br>
+            <label>高度(仅支持512):</label>
+            <select v-model="dataBody.height">
+                <option value="512">512</option>
+                <option value="768">768</option>
+            </select>
+        </div>
+        <div>
+            <label>选择模型:</label>
+            <select v-model="dataBody.model_id">
+                <option v-for="model in models" :value="model.id">{{ model.name }}</option>
+            </select>
+        </div>
+        <div>
+            <label>参考图:</label>&nbsp&nbsp
+            <label class="custom-file" for="ref_img_file">选择参考图片</label>
+            <input class="file" id="ref_img_file" type="file" accept="image/png,image/gif,image/jpeg"
+                @change="update" />
+            <div style="width: auto; min-height: 60;">
+                <div v-if="dataBody.ref_img">
+                    <img :src="dataBody.ref_img" alt="" width="50" height="50">
+                </div>
+            </div>
+        </div>
+        <div class="btn-container">
+            <button @click="generate">生成</button>
+            <button @click="getTasks">获取任务列表</button>
+        </div>
+        <table>
+            <tr>
+                <th>任务ID</th>
+                <th>参考图片</th>
+                <th>生成图片</th>
+                <th>下载生成图片</th>
+                <th>删除该任务</th>
+            </tr>
+            <tr v-for="task in tasks" :key="task.id">
+                <td>{{ task.id }}</td>
+                <td>
+                    <div class="image-container">
+                        <div v-if="task.ref_img">
+                            <img :src="task.ref_img" alt="参考图片">
+                        </div>
+                        <div v-else>
+                            <h2>无</h2>
+                        </div>
+
+                    </div>
+                </td>
+                <td>
+                    <div class="image-container">
+                        <img :src="task.gen_img" alt="生成图片">
+                    </div>
+                </td>
+                <td>
+                    <button @click="downloadImage(task.gen_img ,  'generated_image.png')">下载</button>
+                </td>
+                <td>
+                    <button @click="delimg(task.id)">删除</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="message-box" id="messageBox">
+        <div class="message-content" id="messageContent">
+            <span id="messageText"></span>
+        </div>
+    </div>
+</body>
+
+<script>
+
+    const app = Vue.createApp({
+        data() {
+            return {
+                key : "20aa6c39dcb3c87de8e7d1eea99de7eb",
+                dataBody: {
+                    prompt: '',
+                    width: 512,
+                    height: 512,
+                    model_id: 1,
+                    ref_img: ""
+                },
+                refImg: '',
+                result: null,
+
+                models: [],
+                tasks: []
+            }
+        },
+        mounted() {
+            this.getModels()
+        },
+        methods: {
+            showtime(){
+                showMessage(location.href)
+            },
+            update() {
+                var myHeaders = new Headers();
+                myHeaders.append("ys-api-key",this.key );
+                myHeaders.append("User-Agent", "Apifox/1.0.0 (https://apifox.com)");
+
+                var fileInput = document.getElementById('ref_img_file');
+                var file = fileInput.files[0];
+                var formdata = new FormData();
+                formdata.append("ref_img", file);
+
+                var requestOptions = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: formdata,
+                    redirect: 'follow'
+                };
+
+                fetch("https://ston.6pen.art/release/upload", requestOptions)
+                    .then(response => response.text())
+                    .then(result => this.dataBody.ref_img = JSON.parse(result).data.url)
+                    .catch(error => console.log('error', error))
+
+            },
+            downloadImage(url, fileName) {
+                // Create a temporary link element
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+
+                // Dispatch a click event on the link to trigger the download
+                const clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                });
+                link.dispatchEvent(clickEvent);
+
+                // Remove the temporary link element
+                document.body.removeChild(link);
+            },
+            generate() {
+                // this.dataBody.model_id = this
+
+                var config = {
+                    method: 'post',
+                    url: 'https://ston.6pen.art/release/open-task',
+                    headers: {
+                        'ys-api-key': this.key,
+                        'Content-Type': 'application/json'
+                    },
+                    data: this.dataBody
+                };
+
+                axios(config)
+                    .then(function (response) {
+                        this.result = response.data;
+                        showMessage("生成成功，预计耗时" + this.result.data.estimate + "秒")
+                        // alert(this.result.data.estimate * 1000 + 500)
+                        setTimeout(this.getTasks, this.result.data.estimate * 1000 + 500)
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            getModels() {
+
+                var config = {
+                    method: 'get',
+                    url: 'https://ston.6pen.art/release/open-task/get_models',
+                    headers: {
+                        'ys-api-key': this.key,
+                    }
+                };
+
+                axios(config).then(response => {
+                    this.models = response.data.results
+                })
+            },
+            getTasks() {
+                axios({
+                    method: 'get',
+                    url: 'https://ston.6pen.art/release/open-task?page=1&page_size=999',
+                    headers: {
+                        'ys-api-key': this.key,
+                    }
+                }).then(response => {
+                    showMessage("获取成功")
+                    this.tasks = response.data.results
+
+                })
+            },
+            delimg(imageid) {
+                var config = {
+                    method: 'delete',
+                    url: 'https://ston.6pen.art/release/open-task?id=' + imageid,
+                    headers: {
+                        'ys-api-key': this.key,
+                    }
+                };
+                axios(config)
+                    .then(function (response) {
+                        // this.getTasks()
+                        showMessage("成功")
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
+    })
+
+    app.mount('#app')
+    function showMessage(message) {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.style.display = 'block';
+
+        const messageText = document.getElementById('messageText');
+        messageText.innerText = message;
+        setTimeout(hideMessage, 3000)
+    }
+
+    function hideMessage() {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.style.display = 'none';
+    }
+</script>
+
+<head>
+    <!-- ...其他头部内容... -->
+    <style>
+        .file {
+            display: none;
+            /* Hide the original file input */
+        }
+
+        .custom-file {
+            display: inline-block;
+            border: 2px solid #4caf50;
+            /* Green border */
+            background-color: #fff;
+            /* White background */
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #4caf50;
+            transition: all 0.3s;
+            /* Green text color */
+        }
+
+        .custom-file:hover {
+            background-color: #4caf50;
+            /* Green background on hover */
+            color: #fff;
+            /* White text color on hover */
+        }
+
+        /* Styling for the file name display */
+        .file-name {
+            margin-top: 10px;
+            color: #333;
+            /* Black text color for file name */
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .image-container {
+            width: 50px;
+            height: 50px;
+            /* border-radius: 50%; */
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            /* 设置背景颜色为白色 */
+            color: #333;
+            /* 设置文字颜色为深灰色 */
+        }
+
+        #app {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            /* 设置圆角样式 */
+            background-color: #f2f2f2;
+            /* 设置背景颜色为淡灰色 */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4caf50;
+            /* 设置标题文字颜色为绿色 */
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            /* 设置输入框和下拉列表的圆角样式 */
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            /* 设置按钮背景颜色为绿色 */
+            color: white;
+            /* 设置按钮文字颜色为白色 */
+            border: none;
+            border-radius: 5px;
+            /* 设置按钮的圆角样式 */
+            cursor: pointer;
+            border: 2px solid black;
+            /* 添加黑色边框 */
+        }
+
+        .btn-container {
+            display: flex;
+            /* 设置按钮容器为弹性布局 */
+            justify-content: center;
+            /* 将按钮水平居中对齐 */
+            gap: 10px;
+            /* 设置按钮之间的间隔 */
+        }
+
+        button:hover {
+            background-color: #45a049;
+            /* 设置按钮鼠标悬停时的背景颜色 */
+        }
+
+        img {
+            margin-top: 10px;
+            display: block;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 9999;
+        }
+
+        .message-content {
+            text-align: center;
+        }
+
+        .message-content button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+
+</html>
