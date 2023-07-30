@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像生成</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        /* 样式 */
+    </style>
+
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="baiban">
+            <h1>AI图像生成</h1>
+
+            <div>
+                <label>密钥:</label>
+                <input v-model="key">
+            </div>
+
+            <div>
+                <label>提示词:</label>
+                <input v-model="dataBody.prompt">
+            </div>
+            <div>
+                <label>宽度(仅支持512):</label>
+                <select v-model="dataBody.width">
+                    <option value="512">512</option>
+                    <option value="768">768</option>
+                </select>
+                <br>
+                <label>高度(仅支持512):</label>
+                <select v-model="dataBody.height">
+                    <option value="512">512</option>
+                    <option value="768">768</option>
+                </select>
+            </div>
+            <div>
+                <label>选择模型:</label>
+                <select v-model="dataBody.model_id">
+                    <option v-for="model in models" :value="model.id">{{ model.name }}</option>
+                </select>
+            </div>
+            <div>
+                <label>参考图:</label>&nbsp&nbsp
+                <label class="custom-file" for="ref_img_file">选择参考图片</label>
+                <input class="file" id="ref_img_file" type="file" accept="image/png,image/gif,image/jpeg"
+                    @change="update" />
+                <div class="img-file">
+                    <div v-if="dataBody.ref_img">
+                        <img :src="dataBody.ref_img" alt="" width="50" height="50">
+                    </div>
+                </div>
+            </div>
+            <div class="flex-con">
+                <label>高级设置</label>
+                <label class="switch">
+                    <input type="checkbox" v-model="switchState">
+                    <span class="slider"></span>
+                </label>
+                <button class="btn" @click="generate">生成</button>
+            </div>
+            <br>
+            <div v-if="switchState == 1">
+                <div>
+                    <label>反向词:</label>
+                    <input v-model="addition.negative_prompt">
+                </div>
+                <div>
+                    重绘幅度: {{ addition.strength }}
+                    <input type="range" v-model="addition.strength" min="0.3" max="0.7" step="0.01">
+                </div>
+                <div>
+                    权重: {{ addition.cfg_scale }}
+                    <input type="range" v-model="addition.cfg_scale" min="0" max="25" step="1">
+                </div>
+                <div>
+                    <label>图片格式:</label>
+                    <select v-model="addition.img_fmt">
+                        <option v-for="img in imgfmts" :value="img.fmt">{{ img.fmt }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-container">
+                <!-- <button class="btn" @click="generate">生成</button> -->
+                <!-- <button @click="getTasks">获取任务列表</button> -->
+            </div>
+
+        </div>
+        <div class="baiban">
+            <h1>生成图像广场</h1>
+            <table>
+                <tr>
+                    <th>提示词</th>
+                    <th>参考图片</th>
+                    <th>生成图片</th>
+                    <th>下载生成图片</th>
+                    <th>删除该任务</th>
+                </tr>
+                <tr v-for="task in tasks" :key="task.id">
+                    <td>{{ task.prompt }}</td>
+                    <td>
+                        <div class="image-container">
+                            <div v-if="task.ref_img">
+                                <img :src="task.ref_img" alt="参考图片">
+                            </div>
+                            <div v-else>
+                                <h2>无</h2>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td>
+                        <div class="image-container">
+                            <img :src="task.gen_img" alt="生成图片">
+                        </div>
+                    </td>
+                    <td>
+                        <button @click="downloadImage(task.gen_img ,  'generated_image.png')">下载</button>
+                    </td>
+                    <td>
+                        <button @click="delimg(task.id)">删除</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="message-box" id="messageBox">
+        <div class="message-content" id="messageContent">
+            <span id="messageText"></span>
+        </div>
+    </div>
+</body>
+
+<script src="create-img.js"></script>
+
+<link rel="stylesheet" href="create-img.css">
+
+
+</html>

@@ -1,0 +1,263 @@
+.file {
+    display: none;
+    /* Hide the original file input */
+}
+
+.custom-file {
+    display: inline-block;
+    border: 2px solid #4caf50;
+    /* Green border */
+    background-color: #fff;
+    /* White background */
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #4caf50;
+    transition: all 0.3s;
+    /* Green text color */
+}
+
+.custom-file:hover {
+    background-color: #4caf50;
+    /* Green background on hover */
+    color: #fff;
+    /* White text color on hover */
+}
+
+/* Styling for the file name display */
+.file-name {
+    margin-top: 10px;
+    color: #333;
+    /* Black text color for file name */
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
+
+th,
+td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background-color: #4caf50;
+    color: white;
+}
+
+.image-container {
+    width: 50px;
+    height: 50px;
+    /* border-radius: 50%; */
+    overflow: hidden;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    /* 设置背景颜色为白色 */
+    color: #333;
+    /* 设置文字颜色为深灰色 */
+}
+
+#app {
+    display: flex;
+    /* 设置按钮容器为弹性布局 */
+    /* justify-content: center; */
+    /* 将按钮水平居中对齐 */
+    gap: 20px;
+    /* 设置按钮之间的间隔 */
+}
+
+.img-file {
+    max-width: 600px;
+    min-width: 600px;
+    max-height: 50px;
+    min-height: 50px;
+}
+
+.baiban {
+    max-width: 600px;
+    min-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    /* 设置圆角样式 */
+    background-color: #f2f2f2;
+    /* 设置背景颜色为淡灰色 */
+}
+.baiban > * ::before {
+    transition: all 0.6s;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #4caf50;
+    /* 设置标题文字颜色为绿色 */
+}
+
+label {
+    font-weight: bold;
+}
+
+input,
+select {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    /* 设置输入框和下拉列表的圆角样式 */
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    /* 设置按钮背景颜色为绿色 */
+    color: white;
+    /* 设置按钮文字颜色为白色 */
+    border: none;
+    border-radius: 5px;
+    /* 设置按钮的圆角样式 */
+    cursor: pointer;
+    border: 2px solid black;
+    /* 添加黑色边框 */
+}
+
+.btn-container {
+    display: flex;
+    /* 设置按钮容器为弹性布局 */
+    justify-content: center;
+    /* 将按钮水平居中对齐 */
+    gap: 10px;
+    /* 设置按钮之间的间隔 */
+}
+
+button:hover {
+    background-color: #45a049;
+    /* 设置按钮鼠标悬停时的背景颜色 */
+}
+
+img {
+    margin-top: 10px;
+    display: block;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    margin-bottom: 5px;
+}
+
+.message-box {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.message-content {
+    text-align: center;
+}
+
+.message-content button {
+    margin-top: 10px;
+}
+
+.flex-con {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* 开关按钮的样式 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* 隐藏原始的复选框 */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* 开关按钮的滑块样式（白色） */
+.slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4CAF50;
+    border: 2px solid #000000;
+    /* 绿色边框 */
+    border-radius: 34px;
+    cursor: pointer;
+    transition: all 0.6s;
+}
+
+/* 打开状态下的滑块样式（绿色） */
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 3px;
+    background-color: #b6b7b6;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+/* 开关打开状态下的样式 */
+/* input:checked+.slider { */
+    /* border-color: #000000; */
+    
+    /* 绿色边框 */
+/* } */
+
+/* 开关打开状态下滑块的样式 */
+input:checked+.slider::before {
+    transform: translateX(24px);
+    background-color: #3f8a3f;
+}
