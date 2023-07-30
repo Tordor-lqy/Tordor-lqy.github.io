@@ -118,6 +118,7 @@ const app = Vue.createApp({
             })
         },
         getTasks() {
+            var that = this;
             axios({
                 method: 'get',
                 url: 'https://ston.6pen.art/release/open-task?page=1&page_size=999',
@@ -126,7 +127,7 @@ const app = Vue.createApp({
                 }
             }).then(response => {
                 // showMessage("获取成功")
-                console.log(11)
+                that.getModels()
                 this.tasks = response.data.results
                 this.tasks.sort(compareByCreateAt);
 
