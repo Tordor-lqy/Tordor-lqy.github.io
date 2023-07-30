@@ -2,7 +2,7 @@
 const app = Vue.createApp({
     data() {
         return {
-            key: "20aa6c39dcb3c87de8e7d1eea99de7eb",
+            key: "",
             switchState : 0,
             dataBody: {
                 prompt: '',
