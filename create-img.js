@@ -3,7 +3,7 @@ const app = Vue.createApp({
     data() {
         return {
             key: "",
-            switchState : 0,
+            switchState: 0,
             dataBody: {
                 prompt: '',
                 width: 512,
@@ -12,14 +12,14 @@ const app = Vue.createApp({
             },
             addition: {
                 strength: 0.3,
-                cfg_scale: 0,
+                cfg_scale: 4,
                 negative_prompt: '',
                 img_fmt: 'png',
             },
-           imgfmts : [
-            {fmt : "png"},
-            {fmt : "jpg"}
-           ],
+            imgfmts: [
+                { fmt: "png" },
+                { fmt: "jpg" }
+            ],
             result: null,
 
             models: [],
@@ -78,30 +78,44 @@ const app = Vue.createApp({
             document.body.removeChild(link);
         },
         generate() {
-            // this.dataBody.model_id = this
-            if (this.switchState == 1) {
-                this.dataBody.addition = this.addition
-            }else{
-                this.dataBody.addition = {}
+            if (this.key == "") {
+                showMessage("密钥不能为空")
+            } else {
+                if (this.dataBody.prompt == "") {
+                    showMessage("提示词不能为空")
+                } else {
+
+                    // this.dataBody.model_id = this
+                    if (this.switchState == 1) {
+                        this.dataBody.addition = this.addition
+                    } else {
+                        this.dataBody.addition = {}
+                    }
+                    var config = {
+                        method: 'post',
+                        url: 'https://ston.6pen.art/release/open-task',
+                        headers: {
+                            'ys-api-key': this.key,
+                            'Content-Type': 'application/json'
+                        },
+                        data: this.dataBody
+                    };
+
+                    axios(config)
+                        .then(function (response) {
+                            this.result = response.data;
+                            if(response.data.code == 200){
+                                showMessage("生成成功，预计耗时" + this.result.data.estimate + "秒")
+                            }else{
+                                showMessage("生成失败" + response.data.info)
+                            }
+                            
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
             }
-            var config = {
-                method: 'post',
-                url: 'https://ston.6pen.art/release/open-task',
-                headers: {
-                    'ys-api-key': this.key,
-                    'Content-Type': 'application/json'
-                },
-                data: this.dataBody
-            };
-            
-            axios(config)
-                .then(function (response) {
-                    this.result = response.data;
-                    showMessage("生成成功，预计耗时" + this.result.data.estimate + "秒")
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
         },
         getModels() {
 
@@ -118,7 +132,7 @@ const app = Vue.createApp({
             })
         },
         getTasks() {
-            var that = this;
+            var that = this
             axios({
                 method: 'get',
                 url: 'https://ston.6pen.art/release/open-task?page=1&page_size=999',
@@ -127,9 +141,9 @@ const app = Vue.createApp({
                 }
             }).then(response => {
                 // showMessage("获取成功")
-                that.getModels()
                 this.tasks = response.data.results
                 this.tasks.sort(compareByCreateAt);
+                that.getModels()
 
             })
         },
